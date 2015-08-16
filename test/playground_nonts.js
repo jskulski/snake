@@ -56,8 +56,7 @@ var snake = function (/* arguments */) {
   return r.values(arguments);
 };
 
-// Would really like pattern matching/polymorphism
-move_snake = function (direction) {
+make_move_snake = function (direction) {
   return function (s) {
     return r.concat(
       [direction(r.head(s))],
@@ -66,10 +65,10 @@ move_snake = function (direction) {
   }
 };
 
-var s_north = move_snake(north);
-var s_south = move_snake(south);
-var s_west = move_snake(west);
-var s_east = move_snake(east);
+var s_north = make_move_snake(north);
+var s_south = make_move_snake(south);
+var s_west = make_move_snake(west);
+var s_east = make_move_snake(east);
 
 
 describe('snake', function () {

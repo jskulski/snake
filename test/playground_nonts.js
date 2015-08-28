@@ -242,12 +242,12 @@ var atLeastZero = atLeast(0);
 
 // boardWidth :: [String] -> Int
 var boardWidth = function(rendered_board) {
-  return atLeastZero(r.length(rendered_board) - 2);
+  return atLeastZero(r.subtract(r.length(rendered_board), 2));
 };
 
 // boardHeight :: [String] -> Int
 var boardHeight = function(rendered_board) {
-  return atLeastZero(r.length(r.head(rendered_board)) - 2);
+  return atLeastZero(r.subtract(r.length(r.head(rendered_board)), 2));
 };
 
 // ParseRenderedBoard :: [String] -> BoardState

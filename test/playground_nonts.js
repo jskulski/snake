@@ -174,8 +174,8 @@ describe('Board', function() {
 
 // render :: Board -> String
 var render = function(b) {
-  var str = '';
-  var acc ='';
+  var acc;
+
   var render_point = function(acc, p) {
     return acc + '['+ p.x +' ' + p.y +']'
   };
@@ -219,24 +219,68 @@ describe('renderer', function() {
 
 //#####
 
-// data BoardState = Board Snake MaybeApple
-var BoardState = function() {};
+// data BoardState = Board MaybeSnake MaybeApple
+var BoardState = function(b, ms, ma) {
+  return {
+    board: b,
+    snake: ms,
+    apple: ma
+  }
+};
+
+
+// boardWidth :: [String] -> Int
+var boardWidth = function(rendered_board) {
+  return r.length(rendered_board)
+};
+
+// boardHeight :: [String] -> Int
+var boardHeight = function(rendered_board) {
+  return r.length(r.head(rendered_board));
+};
 
 // ParseRenderedBoard :: [String] -> BoardState
 var parseRenderedBoard = function(rendered_board) {
-  return BoardState()
+  return BoardState(
+    Board(boardWidth(rendered_board), boardHeight(rendered_board)),
+    m.None(),
+    m.None()
+  )
 };
 
 describe('Board to App State parser', function() {
 
-  it('can be created', function() {
-    parseRenderedBoard()
+  it('can parse a wall', function() {
+    expect(
+      parseRenderedBoard('#')
+    ).to.deep.equal(
+      BoardState(
+        Board(1, 1),
+        m.None(),
+        m.None()
+      )
+    )
   });
 
-  it('can parse a square', function() {
-    var parser = Parser()
+  it('can parse a 3x3 board into a 1x1 world', function() {
+    expect(
+      parseRenderedBoard(([
+        '###',
+        '# #',
+        '###'
+      ]))
+    ).to.deep.equal(
+      BoardState(
+        Board(3, 3),
+        m.None(),
+        m.None()
+      )
+    )
+  })
 
 
-  });
+
 
 });
+
+

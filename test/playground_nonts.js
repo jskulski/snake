@@ -229,14 +229,25 @@ var BoardState = function(b, ms, ma) {
 };
 
 
+// atLeast :: Int -> Int -> Int
+var atLeast = r.curry(function(floor, x) {
+  if (x < floor) {
+    return floor;
+  }
+  return x;
+});
+
+// atLeastZero :: Int -> Int
+var atLeastZero = atLeast(0);
+
 // boardWidth :: [String] -> Int
 var boardWidth = function(rendered_board) {
-  return r.length(rendered_board)
+  return atLeastZero(r.length(rendered_board) - 2);
 };
 
 // boardHeight :: [String] -> Int
 var boardHeight = function(rendered_board) {
-  return r.length(r.head(rendered_board));
+  return atLeastZero(r.length(r.head(rendered_board)) - 2);
 };
 
 // ParseRenderedBoard :: [String] -> BoardState
@@ -255,7 +266,7 @@ describe('Board to App State parser', function() {
       parseRenderedBoard('#')
     ).to.deep.equal(
       BoardState(
-        Board(1, 1),
+        Board(0, 0),
         m.None(),
         m.None()
       )
@@ -271,7 +282,7 @@ describe('Board to App State parser', function() {
       ]))
     ).to.deep.equal(
       BoardState(
-        Board(3, 3),
+        Board(1, 1),
         m.None(),
         m.None()
       )

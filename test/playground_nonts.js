@@ -3,6 +3,15 @@ var expect = require('chai').expect;
 var m = require('monet');
 var r = require('ramda');
 
+
+// trace : String -> String -> IO String
+// @impure
+var trace = r.curry(function(tag, x){
+  console.log(tag, x);
+  return x;
+});
+var log = trace('DEBUG: ');
+
 // data Point = Int Int
 var Point = function (x, y) {
   return {
@@ -242,29 +251,6 @@ var BoardState = function(b, ms, ma) {
 };
 
 
-// atLeast :: Int -> Int -> Int
-var atLeast = r.curry(function(floor, x) {
-  if (x < floor) {
-    return floor;
-  }
-  return x;
-});
-
-// atLeastZero :: Int -> Int
-var atLeastZero = atLeast(0);
-
-// subtractTwo :: a -> Int -> Int
-var subtractTwo = r.subtract(r.__, 2);
-
-// determineBoardWidth :: RenderedBoard -> Int
-var determineBoardWidth = r.compose(atLeastZero, subtractTwo, r.length);
-
-// determineBoardHeight :: RenderedBoard -> Int
-var determineBoardHeight = r.compose(atLeastZero, subtractTwo, r.length, r.head);
-
-// determineSnake :: RenderedBoard -> Maybe Snake
-var determineSnake = r.compose(m.Maybe.fromNull, function() { return null });
-
 // compact :: [Char] -> [Char]
 var rejectWall = r.reject(r.equals('#'));
 
@@ -274,15 +260,14 @@ var compact = r.reject(r.equals([]));
 // filterWalls :: RenderedBoard -> RenderedBoard
 var filterWalls = r.compose(r.map(r.join('')), compact, r.map(rejectWall));
 
-console.log(
-  filterWalls(RenderedBoard(
-    '####',
-    '#  #',
-    '# 0#',
-    '####'
-  ))
-);
+// determineBoardWidth :: RenderedBoard -> Int
+var determineBoardWidth = r.compose(r.length, filterWalls);
 
+// determineBoardHeight :: RenderedBoard -> Int
+var determineBoardHeight = r.compose(r.length, r.head, filterWalls);
+
+// determineSnake :: RenderedBoard -> Maybe Snake
+var determineSnake = r.compose(m.Maybe.fromNull, function() { return null });
 
 // parseRenderedBoard :: RenderedBoard -> BoardState
 var parseRenderedBoard = function(rendered_board) {
@@ -311,17 +296,6 @@ describe('Board to App State parser', function() {
     )
   });
 
-  it('can parse a wall', function() {
-    expect(
-      parseRenderedBoard(RenderedBoard('#'))
-    ).to.deep.equal(
-      BoardState(
-        Board(0, 0),
-        m.None(),
-        m.None()
-      )
-    )
-  });
 
   it('can parse a 3x3 board into a 1x1 world', function() {
     expect(

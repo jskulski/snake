@@ -219,6 +219,19 @@ describe('renderer', function() {
 
 //#####
 
+// data BoardSize = Int Int
+var BoardSize = function(width, height) {
+  return {
+    width: width,
+    height: height
+  }
+};
+
+// data RenderedBoard = [String]
+var RenderedBoard = function(/* arguments */) {
+  return r.values(arguments);
+};
+
 // data BoardState = Board MaybeSnake MaybeApple
 var BoardState = function(b, ms, ma) {
   return {
@@ -243,26 +256,64 @@ var atLeastZero = atLeast(0);
 // subtractTwo :: a -> Int -> Int
 var subtractTwo = r.subtract(r.__, 2);
 
-// determineBoardWidth :: [String] -> Int
+// determineBoardWidth :: RenderedBoard -> Int
 var determineBoardWidth = r.compose(atLeastZero, subtractTwo, r.length);
 
-// determineBoardHeight :: [String] -> Int
+// determineBoardHeight :: RenderedBoard -> Int
 var determineBoardHeight = r.compose(atLeastZero, subtractTwo, r.length, r.head);
 
-// ParseRenderedBoard :: [String] -> BoardState
+// determineSnake :: RenderedBoard -> Maybe Snake
+var determineSnake = r.compose(m.Maybe.fromNull, function() { return null });
+
+// compact :: [Char] -> [Char]
+var rejectWall = r.reject(r.equals('#'));
+
+// compact :: [a] -> [a]
+var compact = r.reject(r.equals([]));
+
+// filterWalls :: RenderedBoard -> RenderedBoard
+var filterWalls = r.compose(r.map(r.join('')), compact, r.map(rejectWall));
+
+console.log(
+  filterWalls(RenderedBoard(
+    '####',
+    '#  #',
+    '# 0#',
+    '####'
+  ))
+);
+
+
+// parseRenderedBoard :: RenderedBoard -> BoardState
 var parseRenderedBoard = function(rendered_board) {
   return BoardState(
     Board(determineBoardWidth(rendered_board), determineBoardHeight(rendered_board)),
-    m.None(),
+    determineSnake(rendered_board),
     m.None()
   )
 };
 
 describe('Board to App State parser', function() {
 
+  it('can filter walls', function() {
+    expect(
+      filterWalls(RenderedBoard(
+        '####',
+        '#  #',
+        '# 0#',
+        '####'
+      ))
+    ).to.deep.equal(
+      RenderedBoard(
+        '  ',
+        ' 0'
+      )
+    )
+  });
+
   it('can parse a wall', function() {
     expect(
-      parseRenderedBoard('#')
+      parseRenderedBoard(RenderedBoard('#'))
     ).to.deep.equal(
       BoardState(
         Board(0, 0),
@@ -274,11 +325,11 @@ describe('Board to App State parser', function() {
 
   it('can parse a 3x3 board into a 1x1 world', function() {
     expect(
-      parseRenderedBoard(([
+      parseRenderedBoard((RenderedBoard(
         '###',
         '# #',
         '###'
-      ]))
+      )))
     ).to.deep.equal(
       BoardState(
         Board(1, 1),
@@ -287,6 +338,24 @@ describe('Board to App State parser', function() {
       )
     )
   });
+
+  //it('can parse a baby snake', function() {
+  //  expect(
+  //    parseRenderedBoard(([
+  //      '#####',
+  //      '#   #',
+  //      '# O #',
+  //      '#   #',
+  //      '#####'
+  //    ]))
+  //  ).to.deep.equal(
+  //    BoardState(
+  //      Board(3, 3),
+  //      Snake(Point(1,1)),
+  //      m.None()
+  //    )
+  //  )
+  //});
 
 
 

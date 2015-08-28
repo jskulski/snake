@@ -240,20 +240,19 @@ var atLeast = r.curry(function(floor, x) {
 // atLeastZero :: Int -> Int
 var atLeastZero = atLeast(0);
 
-// boardWidth :: [String] -> Int
-var boardWidth = function(rendered_board) {
-  return atLeastZero(r.subtract(r.length(rendered_board), 2));
-};
+// subtractTwo :: a -> Int -> Int
+var subtractTwo = r.subtract(r.__, 2);
 
-// boardHeight :: [String] -> Int
-var boardHeight = function(rendered_board) {
-  return atLeastZero(r.subtract(r.length(r.head(rendered_board)), 2));
-};
+// determineBoardWidth :: [String] -> Int
+var determineBoardWidth = r.compose(atLeastZero, subtractTwo, r.length);
+
+// determineBoardHeight :: [String] -> Int
+var determineBoardHeight = r.compose(atLeastZero, subtractTwo, r.length, r.head);
 
 // ParseRenderedBoard :: [String] -> BoardState
 var parseRenderedBoard = function(rendered_board) {
   return BoardState(
-    Board(boardWidth(rendered_board), boardHeight(rendered_board)),
+    Board(determineBoardWidth(rendered_board), determineBoardHeight(rendered_board)),
     m.None(),
     m.None()
   )
@@ -287,7 +286,7 @@ describe('Board to App State parser', function() {
         m.None()
       )
     )
-  })
+  });
 
 
 

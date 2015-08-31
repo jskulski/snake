@@ -333,7 +333,7 @@ var makeApple = function(pvs) {
   if (r.isEmpty(pvs)) {
     return m.Maybe.None();
   } else {
-    return Apple(getPoint(r.head(pvs)));
+    return m.Just(Apple(getPoint(r.head(pvs))));
   }
 };
 
@@ -458,30 +458,67 @@ describe('Board to App State parser', function() {
       BoardState(
         Board(3, 3),
         m.None(),
-        Apple(Point(1,1))
+        m.Just(Apple(Point(1,1)))
       )
     )
 
   });
 });
 
-// isPointAnApple :: Point -> BoardState -> Boolean
-var isPointAnApple = function(point, boardState) {
-  return r.equals(point, boardState.apple.value);
+// isPointAnApple :: Point -> Maybe Apple -> Boolean
+var isPointAnApple = function(point, apple) {
+  if (apple.isNone()) {
+    return false;
+  }
+
+  return r.equals(point, getPoint(apple.some()));
 };
 
-// growOrMove :: Point -> BoardState -> BoardState
-var growOrMove = function(next_point, boardState) {
+// growTo :: Point -> Snake -> Snake
+var growTo = r.curry(function(point, snake) {
+  return r.concat(
+    [point],
+    snake
+  );
+});
+
+// moveTo :: Point -> Snake -> Snake
+var moveTo = r.curry(function(point, snake) {
+  return r.concat(
+    [point],
+    r.init(snake)
+  );
+});
+
+// growOrMoveTo :: Point -> Maybe Apple -> (Snake -> Snake)
+var growOrMoveTo = function(next_point, apple) {
+  if (isPointAnApple(next_point, apple)) {
+    return growTo(next_point);
+  }
+
+  return moveTo(next_point)
+};
+
+// fateOfApple :: Point -> Maybe Apple -> Maybe Apple
+var fateOfApple = function(move_to, apple) {
+  if (apple.isNone()) {
+    return apple;
+  } else {
+    if(r.equals(move_to, getPoint(apple.some()))) {
+      return m.Maybe.None();
+    }
+  }
 };
 
 // tick :: BoardState -> BoardState
 var tick = function(boardState) {
   var direction = s_north;
-  var point = r.head(direction(boardState.snake));
+  var move_to = r.head(direction(boardState.snake));
+
   return BoardState(
     boardState.board,
-    direction(boardState.snake),
-    boardState.apple
+    growOrMoveTo(move_to, boardState.apple)(boardState.snake),
+    fateOfApple(move_to, boardState.apple)
   )
 };
 
@@ -506,24 +543,24 @@ describe('Game system', function() {
     ))
   });
 
-  //it('grows a snake', function() {
-  //  expect(tick(parseRenderedBoard(
-  //    [
-  //      '#######',
-  //      '#  a  #',
-  //      '#  0  #',
-  //      '#     #',
-  //      '#######'
-  //    ]
-  //  ))).to.deep.equal(parseRenderedBoard(
-  //    [
-  //      '#######',
-  //      '#  0  #',
-  //      '#  1  #',
-  //      '#     #',
-  //      '#######'
-  //    ]
-  //  ));
-  //});
+  it('grows a snake', function() {
+    expect(tick(parseRenderedBoard(
+      [
+        '#######',
+        '#  a  #',
+        '#  0  #',
+        '#     #',
+        '#######'
+      ]
+    ))).to.deep.equal(parseRenderedBoard(
+      [
+        '#######',
+        '#  0  #',
+        '#  1  #',
+        '#     #',
+        '#######'
+      ]
+    ));
+  });
 });
 

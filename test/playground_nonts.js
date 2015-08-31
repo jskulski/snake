@@ -198,11 +198,9 @@ var render = function(b) {
   //return r.reduce(render_point, '', rows);
 };
 
-// data Apple = Point
+// data Apple = PointValue
 var Apple = function(point) {
-  return {
-    lives: point
-  }
+  return PointValue(point.x, point.y, 'a');
 };
 
 describe('apple', function() {
@@ -287,14 +285,27 @@ var mapIndicesAndValues = function(rendered_board) {
 // isEmptySpace :: PointValue -> Boolean
 var isEmptySpace = r.compose(r.equals(' '), r.prop('value'));
 
-// filterEmptySpaces :: [PointValues] -> [PointValues]
-var filterEmptySpaces = r.reject(isEmptySpace);
+// isAppleSpace :: PointValue -> Boolean
+var isAppleSpace = r.compose(r.equals('a'), r.prop('value'));
+
+// selectAppleSpaces :: [PointValues] -> [PointValues]
+var selectAppleSpaces = r.filter(function(pv) {
+  return isAppleSpace(pv);
+});
+
+// selectSnakeSpaces :: [PointValues] -> [PointValues]
+var selectSnakeSpaces = r.filter(function(pv) {
+  return !isAppleSpace(pv) && !isEmptySpace(pv)
+});
 
 // orderSnakePointValues :: [PointValues] -> [PointValues]
 var orderSnakePointValues = r.sortBy(r.prop('value'));
 
+// getPoint :: PointValue -> Point
+var getPoint = r.prop('p');
+
 // getPoints :: [PointValues] -> [Point]
-var getPoints = r.map(r.prop('p'));
+var getPoints = r.map(getPoint);
 
 // makeSnake :: [Points] -> Maybe Snake
 // TODO: figure out monads, this seems wrong
@@ -311,7 +322,25 @@ var findSnake = r.compose(
   makeSnake,
   getPoints,
   orderSnakePointValues,
-  filterEmptySpaces,
+  selectSnakeSpaces,
+  r.flatten,
+  mapIndicesAndValues,
+  filterWalls
+);
+
+// makeApple :: PointValue -> Maybe Apple
+var makeApple = function(pvs) {
+  if (r.isEmpty(pvs)) {
+    return m.Maybe.None();
+  } else {
+    return Apple(getPoint(r.head(pvs)));
+  }
+};
+
+// findApple :: RenderedBoard -> Maybe Apple
+var findApple = r.compose(
+  makeApple,
+  selectAppleSpaces,
   r.flatten,
   mapIndicesAndValues,
   filterWalls
@@ -322,7 +351,7 @@ var parseRenderedBoard = function(rendered_board) {
   return BoardState(
     Board(determineBoardWidth(rendered_board), determineBoardHeight(rendered_board)),
     findSnake(rendered_board),
-    m.None()
+    findApple(rendered_board)
   )
 };
 
@@ -416,11 +445,39 @@ describe('Board to App State parser', function() {
     )
   });
 
+  it('parses an apple', function() {
+    expect(
+      parseRenderedBoard(([
+        '#####',
+        '#   #',
+        '# a #',
+        '#   #',
+        '#####'
+      ]))
+    ).to.deep.equal(
+      BoardState(
+        Board(3, 3),
+        m.None(),
+        Apple(Point(1,1))
+      )
+    )
+
+  });
 });
+
+// isPointAnApple :: Point -> BoardState -> Boolean
+var isPointAnApple = function(point, boardState) {
+  return r.equals(point, boardState.apple.value);
+};
+
+// growOrMove :: Point -> BoardState -> BoardState
+var growOrMove = function(next_point, boardState) {
+};
 
 // tick :: BoardState -> BoardState
 var tick = function(boardState) {
   var direction = s_north;
+  var point = r.head(direction(boardState.snake));
   return BoardState(
     boardState.board,
     direction(boardState.snake),
@@ -448,5 +505,25 @@ describe('Game system', function() {
       ]
     ))
   });
+
+  //it('grows a snake', function() {
+  //  expect(tick(parseRenderedBoard(
+  //    [
+  //      '#######',
+  //      '#  a  #',
+  //      '#  0  #',
+  //      '#     #',
+  //      '#######'
+  //    ]
+  //  ))).to.deep.equal(parseRenderedBoard(
+  //    [
+  //      '#######',
+  //      '#  0  #',
+  //      '#  1  #',
+  //      '#     #',
+  //      '#######'
+  //    ]
+  //  ));
+  //});
 });
 

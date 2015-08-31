@@ -334,54 +334,38 @@ var parseRenderedBoard = function(rendered_board) {
 };
 
 describe('Board to App State parser', function() {
-  //
-  //it('can filter walls', function() {
-  //  expect(
-  //    filterWalls(RenderedBoard(
-  //      '####',
-  //      '#  #',
-  //      '# 0#',
-  //      '####'
-  //    ))
-  //  ).to.deep.equal(
-  //    RenderedBoard(
-  //      '  ',
-  //      ' 0'
-  //    )
-  //  )
-  //});
-  //
-  //it('can get a list of of snake coridinates', function() {
-  //  expect(
-  //    findSnake(RenderedBoard(
-  //      '2 ',
-  //      '10'
-  //    ))
-  //  ).to.deep.equal(
-  //    Snake(
-  //      Point(1,1),
-  //      Point(0,1),
-  //      Point(0,0)
-  //    )
-  //  )
-  //});
-  //
-  //it('can return a Maybe Snake', function() {
-  //  //var MaybeSnake = function(s) {
-  //  //  return m.Maybe.Some(s)
-  //  //}
-  //  //log(
-  //  //  MaybeSnake(Snake())
-  //  //);
-  //  //expect(parseRenderedBoard(
-  //  //        '###',
-  //  //        '# #',
-  //  //        '###'
-  //  //).snake).to.equal(
-  //  //  m.None()
-  //  //)
-  //});
-  //
+
+  it('can filter walls', function() {
+    expect(
+      filterWalls(RenderedBoard(
+        '####',
+        '#  #',
+        '# 0#',
+        '####'
+      ))
+    ).to.deep.equal(
+      RenderedBoard(
+        '  ',
+        ' 0'
+      )
+    )
+  });
+
+  it('can get a list of of snake coridinates', function() {
+    expect(
+      findSnake(RenderedBoard(
+        '2 ',
+        '10'
+      ))
+    ).to.deep.equal(
+      Snake(
+        Point(1,1),
+        Point(0,1),
+        Point(0,0)
+      )
+    )
+  });
+
   it('can parse a 3x3 board into a 1x1 world', function() {
     expect(
       parseRenderedBoard((RenderedBoard(
@@ -438,7 +422,6 @@ describe('Board to App State parser', function() {
       )
     )
   });
-
 
 
 });

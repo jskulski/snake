@@ -420,10 +420,10 @@ describe('Board to App State parser', function() {
 
 // tick :: BoardState -> BoardState
 var tick = function(boardState) {
-  var direction = north;
+  var direction = s_north;
   return BoardState(
     boardState.board,
-    s_north(boardState.snake),
+    direction(boardState.snake),
     boardState.apple
   )
 };

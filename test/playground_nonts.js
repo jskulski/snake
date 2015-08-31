@@ -273,20 +273,17 @@ var determineSnake = r.compose(m.Maybe.fromNull, function() { return null });
 var PointValue = function(x, y, value) {
   return {
     p: Point(x, y),
-    x: x,
-    y: y,
     value: value
   };
 };
 
-
 // TODO: tacit?
 // mapIndicesAndValues :: RenderedBoard -> [PointValues]
 var mapIndicesAndValues = function(rendered_board) {
-  return r.map(function(x) {
-    return r.map(function (y) {
-      return PointValue(x, y, rendered_board[x][y]);
-    })(r.keys(r.split('', rendered_board[x])));
+  return r.map(function(row) {
+    return r.map(function (col) {
+      return PointValue(parseInt(col), parseInt(row), rendered_board[row][col]);
+    })(r.keys(r.split('', rendered_board[row])));
   })(r.keys(rendered_board));
 };
 
@@ -296,31 +293,18 @@ var isEmptySpace = r.compose(r.equals(' '), r.prop('value'));
 // filterEmptySpaces :: [PointValues] -> [PointValues]
 var filterEmptySpaces = r.reject(isEmptySpace);
 
-//var t = [ [ { x: '0', y: '0', value: '2' },
-//  { x: '0', y: '1', value: ' ' } ],
-//  [ { x: '1', y: '0', value: '1' },
-//    { x: '1', y: '1', value: '0' } ] ];
-//
-////log('---')
-//////log(t);
-////log(
-////  r.sortBy(r.prop('value'))(r.flatten(t))
-////);
-//log('---')
-
 // orderSnakePoints :: [Points] -> [Points]
-//var orderSnakePoints = r.compose(r.sortBy, r.prop('value'));
-var orderSnakePoints = function(points) {
-  return r.sortBy(r.prop('value'))(r.flatten(points));
-  //log(
-  //  points,
-  //  r.flatten(points)
-  //  //r.map(r.prop('value'))(points)
-  //)
-};
+var orderSnakePoints = r.sortBy(r.prop('value'));
 
 // findSnake :: RenderedBoard -> Maybe Snake
-var findSnake = r.compose(orderSnakePoints, filterEmptySpaces, r.flatten, mapIndicesAndValues, filterWalls);
+var findSnake = r.compose(
+  r.map(r.prop('p')),
+  orderSnakePoints,
+  filterEmptySpaces,
+  r.flatten,
+  mapIndicesAndValues,
+  filterWalls
+);
 
 // parseRenderedBoard :: RenderedBoard -> BoardState
 var parseRenderedBoard = function(rendered_board) {

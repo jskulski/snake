@@ -290,8 +290,11 @@ var mapIndicesAndValues = function(rendered_board) {
   })(r.keys(rendered_board));
 };
 
-// filterEmptySpaces :: [Points]
-var filterEmptySpaces = function() {}
+// isEmptySpace :: PointValue -> Boolean
+var isEmptySpace = r.compose(r.equals(' '), r.prop('value'));
+
+// filterEmptySpaces :: [PointValues] -> [PointValues]
+var filterEmptySpaces = r.reject(isEmptySpace);
 
 //var t = [ [ { x: '0', y: '0', value: '2' },
 //  { x: '0', y: '1', value: ' ' } ],
@@ -308,7 +311,7 @@ var filterEmptySpaces = function() {}
 // orderSnakePoints :: [Points] -> [Points]
 //var orderSnakePoints = r.compose(r.sortBy, r.prop('value'));
 var orderSnakePoints = function(points) {
-  return r.sortBy(r.prop('value'))(r.flatten(points))
+  return r.sortBy(r.prop('value'))(r.flatten(points));
   //log(
   //  points,
   //  r.flatten(points)
@@ -317,7 +320,7 @@ var orderSnakePoints = function(points) {
 };
 
 // findSnake :: RenderedBoard -> Maybe Snake
-var findSnake = r.compose(orderSnakePoints, mapIndicesAndValues, filterWalls);
+var findSnake = r.compose(orderSnakePoints, filterEmptySpaces, r.flatten, mapIndicesAndValues, filterWalls);
 
 // parseRenderedBoard :: RenderedBoard -> BoardState
 var parseRenderedBoard = function(rendered_board) {

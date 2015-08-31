@@ -416,7 +416,37 @@ describe('Board to App State parser', function() {
     )
   });
 
-
 });
 
+// tick :: BoardState -> BoardState
+var tick = function(boardState) {
+  var direction = north;
+  return BoardState(
+    boardState.board,
+    s_north(boardState.snake),
+    boardState.apple
+  )
+};
+
+describe('Game system', function() {
+  it('moves the snake in current direction during tick', function() {
+    expect(tick(parseRenderedBoard(
+      [
+        '#######',
+        '#     #',
+        '#  0  #',
+        '#     #',
+        '#######'
+      ]
+    ))).to.deep.equal(parseRenderedBoard(
+      [
+        '#######',
+        '#  0  #',
+        '#     #',
+        '#     #',
+        '#######'
+      ]
+    ))
+  });
+});
 

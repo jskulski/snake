@@ -64,6 +64,10 @@ describe('points', function () {
 
 // data Snake = [Point]
 var Snake = function (/* arguments */) {
+  if (r.isEmpty(arguments[0])) {
+    throw new Error('Snake must have at least one point, e.g. a head')
+  }
+
   return r.values(arguments);
 };
 
@@ -267,7 +271,7 @@ var determineBoardWidth = r.compose(r.length, filterWalls);
 var determineBoardHeight = r.compose(r.length, r.head, filterWalls);
 
 // determineSnake :: RenderedBoard -> Maybe Snake
-var determineSnake = r.compose(m.Maybe.fromNull, function() { return null });
+//var determineSnake = r.compose(m.Maybe.fromNull, function() { return null });
 
 // data PointValue = Point Char
 var PointValue = function(x, y, value) {
@@ -297,10 +301,21 @@ var filterEmptySpaces = r.reject(isEmptySpace);
 var orderSnakePointValues = r.sortBy(r.prop('value'));
 
 // getPoints :: [PointValues] -> [Point]
-var getPoints = r.map(r.prop('p'))
+var getPoints = r.map(r.prop('p'));
+
+// makeSnake :: [Points] -> Maybe Snake
+// TODO: figure out monads, this seems wrong
+var makeSnake = function(points) {
+  if (r.isEmpty(points)) {
+    return m.Maybe.None()
+  } else {
+    return Snake.apply(this, points)
+  }
+};
 
 // findSnake :: RenderedBoard -> Maybe Snake
 var findSnake = r.compose(
+  makeSnake,
   getPoints,
   orderSnakePointValues,
   filterEmptySpaces,
@@ -313,45 +328,60 @@ var findSnake = r.compose(
 var parseRenderedBoard = function(rendered_board) {
   return BoardState(
     Board(determineBoardWidth(rendered_board), determineBoardHeight(rendered_board)),
-    determineSnake(rendered_board),
+    findSnake(rendered_board),
     m.None()
   )
 };
 
 describe('Board to App State parser', function() {
-
-  it('can filter walls', function() {
-    expect(
-      filterWalls(RenderedBoard(
-        '####',
-        '#  #',
-        '# 0#',
-        '####'
-      ))
-    ).to.deep.equal(
-      RenderedBoard(
-        '  ',
-        ' 0'
-      )
-    )
-  });
-
-  it('can get a list of of snake coridinates', function() {
-    expect(
-      findSnake(RenderedBoard(
-        '2 ',
-        '10'
-      ))
-    ).to.deep.equal(
-      Snake(
-        Point(1,1),
-        Point(0,1),
-        Point(0,0)
-      )
-    )
-  });
-
-
+  //
+  //it('can filter walls', function() {
+  //  expect(
+  //    filterWalls(RenderedBoard(
+  //      '####',
+  //      '#  #',
+  //      '# 0#',
+  //      '####'
+  //    ))
+  //  ).to.deep.equal(
+  //    RenderedBoard(
+  //      '  ',
+  //      ' 0'
+  //    )
+  //  )
+  //});
+  //
+  //it('can get a list of of snake coridinates', function() {
+  //  expect(
+  //    findSnake(RenderedBoard(
+  //      '2 ',
+  //      '10'
+  //    ))
+  //  ).to.deep.equal(
+  //    Snake(
+  //      Point(1,1),
+  //      Point(0,1),
+  //      Point(0,0)
+  //    )
+  //  )
+  //});
+  //
+  //it('can return a Maybe Snake', function() {
+  //  //var MaybeSnake = function(s) {
+  //  //  return m.Maybe.Some(s)
+  //  //}
+  //  //log(
+  //  //  MaybeSnake(Snake())
+  //  //);
+  //  //expect(parseRenderedBoard(
+  //  //        '###',
+  //  //        '# #',
+  //  //        '###'
+  //  //).snake).to.equal(
+  //  //  m.None()
+  //  //)
+  //});
+  //
   it('can parse a 3x3 board into a 1x1 world', function() {
     expect(
       parseRenderedBoard((RenderedBoard(
@@ -368,24 +398,46 @@ describe('Board to App State parser', function() {
     )
   });
 
-  //it('can parse a baby snake', function() {
-  //  expect(
-  //    parseRenderedBoard(([
-  //      '#####',
-  //      '#   #',
-  //      '# O #',
-  //      '#   #',
-  //      '#####'
-  //    ]))
-  //  ).to.deep.equal(
-  //    BoardState(
-  //      Board(3, 3),
-  //      Snake(Point(1,1)),
-  //      m.None()
-  //    )
-  //  )
-  //});
+  it('can parse a baby snake', function() {
+    expect(
+      parseRenderedBoard(([
+        '#####',
+        '#   #',
+        '# 0 #',
+        '#   #',
+        '#####'
+      ]))
+    ).to.deep.equal(
+      BoardState(
+        Board(3, 3),
+        Snake(Point(1,1)),
+        m.None()
+      )
+    )
+  });
 
+  it('can parse a teen snake', function() {
+    expect(
+      parseRenderedBoard(([
+        '#####',
+        '# 12#',
+        '# 03#',
+        '#   #',
+        '#####'
+      ]))
+    ).to.deep.equal(
+      BoardState(
+        Board(3, 3),
+        Snake(
+          Point(1,1),
+          north(Point(1,1)),
+          east(north(Point(1,1))),
+          south(east(north(Point(1,1))))
+        ),
+        m.None()
+      )
+    )
+  });
 
 
 

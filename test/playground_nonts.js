@@ -169,14 +169,7 @@ describe('Snake', function () {
   });
 });
 
-
-// data Board = Int Int
-var Board = function(width, height) {
-  return {
-    width: width,
-    height: height
-  };
-};
+var Board = require('../src/Board');
 
 describe('Board', function() {
   it('can be created', function() {
@@ -351,7 +344,7 @@ describe('Board to App State parser', function() {
     )
   });
 
-  it('can get a list of of snake coridinates', function() {
+  it('can get a list of of snake coordinates', function() {
     expect(
       findSnake(RenderedBoard(
         '2 ',

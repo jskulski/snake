@@ -293,13 +293,16 @@ var isEmptySpace = r.compose(r.equals(' '), r.prop('value'));
 // filterEmptySpaces :: [PointValues] -> [PointValues]
 var filterEmptySpaces = r.reject(isEmptySpace);
 
-// orderSnakePoints :: [Points] -> [Points]
-var orderSnakePoints = r.sortBy(r.prop('value'));
+// orderSnakePointValues :: [PointValues] -> [PointValues]
+var orderSnakePointValues = r.sortBy(r.prop('value'));
+
+// getPoints :: [PointValues] -> [Point]
+var getPoints = r.map(r.prop('p'))
 
 // findSnake :: RenderedBoard -> Maybe Snake
 var findSnake = r.compose(
-  r.map(r.prop('p')),
-  orderSnakePoints,
+  getPoints,
+  orderSnakePointValues,
   filterEmptySpaces,
   r.flatten,
   mapIndicesAndValues,

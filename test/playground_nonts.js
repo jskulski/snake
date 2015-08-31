@@ -269,6 +269,56 @@ var determineBoardHeight = r.compose(r.length, r.head, filterWalls);
 // determineSnake :: RenderedBoard -> Maybe Snake
 var determineSnake = r.compose(m.Maybe.fromNull, function() { return null });
 
+// data PointValue = Point Char
+var PointValue = function(x, y, value) {
+  return {
+    p: Point(x, y),
+    x: x,
+    y: y,
+    value: value
+  };
+};
+
+
+// TODO: tacit?
+// mapIndicesAndValues :: RenderedBoard -> [PointValues]
+var mapIndicesAndValues = function(rendered_board) {
+  return r.map(function(x) {
+    return r.map(function (y) {
+      return PointValue(x, y, rendered_board[x][y]);
+    })(r.keys(r.split('', rendered_board[x])));
+  })(r.keys(rendered_board));
+};
+
+// filterEmptySpaces :: [Points]
+var filterEmptySpaces = function() {}
+
+//var t = [ [ { x: '0', y: '0', value: '2' },
+//  { x: '0', y: '1', value: ' ' } ],
+//  [ { x: '1', y: '0', value: '1' },
+//    { x: '1', y: '1', value: '0' } ] ];
+//
+////log('---')
+//////log(t);
+////log(
+////  r.sortBy(r.prop('value'))(r.flatten(t))
+////);
+//log('---')
+
+// orderSnakePoints :: [Points] -> [Points]
+//var orderSnakePoints = r.compose(r.sortBy, r.prop('value'));
+var orderSnakePoints = function(points) {
+  return r.sortBy(r.prop('value'))(r.flatten(points))
+  //log(
+  //  points,
+  //  r.flatten(points)
+  //  //r.map(r.prop('value'))(points)
+  //)
+};
+
+// findSnake :: RenderedBoard -> Maybe Snake
+var findSnake = r.compose(orderSnakePoints, mapIndicesAndValues, filterWalls);
+
 // parseRenderedBoard :: RenderedBoard -> BoardState
 var parseRenderedBoard = function(rendered_board) {
   return BoardState(
@@ -292,6 +342,21 @@ describe('Board to App State parser', function() {
       RenderedBoard(
         '  ',
         ' 0'
+      )
+    )
+  });
+
+  it('can get a list of of snake coridinates', function() {
+    expect(
+      findSnake(RenderedBoard(
+        '2 ',
+        '10'
+      ))
+    ).to.deep.equal(
+      Snake(
+        Point(1,1),
+        Point(0,1),
+        Point(0,0)
       )
     )
   });
